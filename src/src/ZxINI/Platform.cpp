@@ -17,9 +17,9 @@ namespace ZQF::ZxINI::Private
 #ifdef _WIN32
     static auto PathUtf8ToWide(const std::string_view msPath) -> std::unique_ptr<wchar_t[]>
     {
-        const auto char_count = static_cast<size_t>(::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, msPath.data(), static_cast<int>(msPath.size()), nullptr, 0));
-        auto buffer = std::make_unique_for_overwrite<wchar_t[]>(char_count + 1);
-        const auto char_count_real = static_cast<size_t>(::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, msPath.data(), static_cast<int>(msPath.size()), buffer.get(), static_cast<int>(char_count)));
+        const size_t buffer_max_chars = (msPath.size() * sizeof(char) + 1) * 2;
+        auto buffer = std::make_unique_for_overwrite<wchar_t[]>(buffer_max_chars);
+        const auto char_count_real = static_cast<size_t>(::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, msPath.data(), static_cast<int>(msPath.size()), buffer.get(), static_cast<int>(buffer_max_chars)));
         buffer[char_count_real] = {};
         return std::move(buffer);
     }
