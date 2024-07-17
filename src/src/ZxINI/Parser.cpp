@@ -169,4 +169,46 @@ namespace ZQF::ZxINI
         Private::WriteAllBytes(msPath, dump_str, isForceSave);
     }
 
+    auto Parser::operator[] (const std::string_view msNode)->KeysMap&
+    {
+        if (auto keys_map_opt = this->Get(msNode))
+        {
+            return **keys_map_opt;
+        }
+
+        throw std::runtime_error("not find node");
+    }
+
+    auto Parser::Exist(const std::string_view msNode) const -> bool
+    {
+        return m_mpNodes.contains(msNode);
+    }
+
+    auto Parser::Exist(const std::string_view msNode, const std::string_view msKey) -> bool
+    {
+        auto ite_node = m_mpNodes.find(msNode);
+        if (ite_node != m_mpNodes.end())
+        {
+            return ite_node->second.find(msKey) != ite_node->second.end() ? true : false;
+        }
+
+        return false;
+    }
+
+    auto Parser::Get(const std::string_view msNode) -> std::optional<KeysMap*>
+    {
+        auto ite = m_mpNodes.find(msNode);
+        return (ite != m_mpNodes.end()) ? std::optional<KeysMap*>{&ite->second} : std::nullopt;
+    }
+
+    auto Parser::Get(const std::string_view msNode, const std::string_view msKey) -> std::optional<Value*>
+    {
+        if (auto keys_map_opt = this->Get(msNode))
+        {
+            auto& keys_map = *keys_map_opt;
+            auto ite = keys_map->find(msKey);
+            return (ite != keys_map->end()) ? std::optional<Value*>{&ite->second} : std::nullopt;
+        }
+        return std::nullopt;
+    }
 }

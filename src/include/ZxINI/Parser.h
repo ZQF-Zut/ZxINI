@@ -8,10 +8,30 @@
 
 namespace ZQF::ZxINI
 {
+    // https://www.cppstories.com/2021/heterogeneous-access-cpp20/
+    struct string_hash
+    {
+        using is_transparent = void;
+        [[nodiscard]] size_t operator()(const char* cpKey) const
+        {
+            return std::hash<std::string_view>{}(cpKey);
+        }
+
+        [[nodiscard]] size_t operator()(const std::string_view msKey) const
+        {
+            return std::hash<std::string_view>{}(msKey);
+        }
+
+        [[nodiscard]] size_t operator()(const std::string& msKey) const
+        {
+            return std::hash<std::string>{}(msKey);
+        }
+    };
+
     using Key = std::string;
     using NodeName = std::string;
-    using KeysMap = std::unordered_map<ZxINI::Key, ZxINI::Value>;
-    using NodesMap = std::unordered_map<NodeName, KeysMap>;
+    using KeysMap = std::unordered_map<ZxINI::Key, ZxINI::Value, string_hash, std::equal_to<>>;
+    using NodesMap = std::unordered_map<NodeName, KeysMap, string_hash, std::equal_to<>>;
 
 
     class Parser
@@ -24,38 +44,18 @@ namespace ZQF::ZxINI
         Parser(const std::string_view msPath);
 
     public:
-        auto Dump() const -> std::string;
+        auto Dump() const->std::string;
         auto Parse(const std::string_view msPath) -> void;
 
     public:
         auto Save(const std::string_view msPath, bool isForceSave) const -> void;
-        
-        //auto Get(const std::string_view msNode) -> std::optional<std::reference_wrapper<KeysMap>>
-        //{
-        //    auto ite = m_mpNodes.find(msNode.data());
-        //    return (ite != m_mpNodes.end()) ? std::optional<KeysMap&>{ite->second} : std::nullopt;
-        //}
 
-        //auto Get(const std::string_view msNode, const std::string_view msKey) -> std::optional<std::reference_wrapper<Value>>
-        //{
-        //    if (auto keys_map_opt = this->Get(msNode))
-        //    {
-        //        auto& keys_map = *keys_map_opt;
-        //        auto ite = keys_map.get().find(msKey.data());
-        //        return (ite != keys_map.get().end()) ? std::optional<Value&>{ite->second} : std::nullopt;
-        //    }
-        //    return std::nullopt;
-        //}
-
-        //auto operator[] (size_t)->KeysMap & = delete;
-        //auto operator[] (const std::string_view msNode)->KeysMap&
-        //{
-        //    if (auto keys_map_opt = this->Get(msNode))
-        //    {
-        //        return (*keys_map_opt);
-        //    }
-
-        //    throw std::runtime_error("not find node");
-        //}
+    public:
+        auto operator[] (size_t)->KeysMap & = delete;
+        auto operator[] (const std::string_view msNode)->KeysMap&;
+        auto Exist(const std::string_view msNode) const -> bool;
+        auto Exist(const std::string_view msNode, const std::string_view msKey) -> bool;
+        auto Get(const std::string_view msNode) -> std::optional<KeysMap*>;
+        auto Get(const std::string_view msNode, const std::string_view msKey) -> std::optional<Value*>;
     };
 }

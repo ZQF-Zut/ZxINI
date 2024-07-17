@@ -61,7 +61,7 @@ namespace ZQF::ZxINI::Private
         return { file_size, std::move(buffer) };
     }
 
-    auto WriteAllBytes(const std::string_view msPath, const std::span<char> spData, bool isForceCreate) -> void
+    auto WriteAllBytes(const std::string_view msPath, const std::span<const char> spData, bool isForceCreate) -> void
     {
         constexpr auto create_always = O_CREAT | O_WRONLY | O_TRUNC;
         constexpr auto create_new = O_CREAT | O_WRONLY | O_EXCL;

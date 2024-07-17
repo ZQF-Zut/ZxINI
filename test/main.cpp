@@ -53,6 +53,14 @@
     ZQF::ZxINI::Parser parser;
     parser.Parse("1.ini");
     parser.Save("2.ini", true);
+
+    assert(parser["Loader MyEXE"]["TargetEXE"].Get<std::string_view>() == "sorakoi.exe");
+    assert(parser["Loader MyEXE"]["TargetDLLCount"].Get<size_t>() == 3);
+    assert(parser["Access"]["Angle"].Get<double>() == 3.14);
+    assert(parser["Strings"]["L_optInstallProductKey"].Get<std::string_view>() == "ipk");
+    assert(parser["objects"]["WWS_WWSV1PERFCOUNTERS_009_NAME"].Get<std::string_view>() == "WF (System.Workflow) 4.0.0.0");
+
+    std::println("{}", parser["Loader MyEXE"]["TargetEXE"].Get<std::string_view>());
 }
 
 
