@@ -17,18 +17,18 @@ namespace ZQF::ZxINI::Private
 #ifdef _WIN32
     static auto PathUtf8ToWide(const std::string_view msPath) -> std::unique_ptr<wchar_t[]>
     {
-        const size_t buffer_max_chars = (msPath.size() * sizeof(char) + 1) * 2;
+        const std::size_t buffer_max_chars = (msPath.size() * sizeof(char) + 1) * 2;
         auto buffer = std::make_unique_for_overwrite<wchar_t[]>(buffer_max_chars);
-        const auto char_count_real = static_cast<size_t>(::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, msPath.data(), static_cast<int>(msPath.size()), buffer.get(), static_cast<int>(buffer_max_chars)));
+        const auto char_count_real = static_cast<std::size_t>(::MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, msPath.data(), static_cast<int>(msPath.size()), buffer.get(), static_cast<int>(buffer_max_chars)));
         buffer[char_count_real] = {};
         return std::move(buffer);
     }
 
-    auto ReadAllBytes(const std::string_view msPath) -> std::pair<size_t, std::unique_ptr<char[]>>
+    auto ReadAllBytes(const std::string_view msPath) -> std::pair<std::size_t, std::unique_ptr<char[]>>
     {
         const HANDLE hfile = ::CreateFileW(PathUtf8ToWide(msPath).get(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
         if (hfile == INVALID_HANDLE_VALUE) { throw std::runtime_error(std::format("ZxINI::RreadAllBytes(): open file error!. msPath: {}", msPath)); }
-        const auto file_size = static_cast<size_t>(::GetFileSize(hfile, nullptr));
+        const auto file_size = static_cast<std::size_t>(::GetFileSize(hfile, nullptr));
         auto file_buffer = std::make_unique_for_overwrite<char[]>(file_size + 2);
         DWORD read{};
         (void)::ReadFile(hfile, file_buffer.get(), static_cast<DWORD>(file_size), &read, nullptr);
@@ -47,7 +47,7 @@ namespace ZQF::ZxINI::Private
         (void)::CloseHandle(hfile);
     }
 #else
-    auto ReadAllBytes(const std::string_view msPath) -> std::pair<size_t, std::unique_ptr<char[]>>
+    auto ReadAllBytes(const std::string_view msPath) -> std::pair<std::size_t, std::unique_ptr<char[]>>
     {
         const auto file_handle = ::open(msPath.data(), O_RDONLY, 0666);
         if (file_handle == -1) { throw std::runtime_error(std::format("ZxINI::RreadAllBytes(): open file error!. msPath: {}", msPath)); }
